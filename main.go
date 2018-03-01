@@ -4,9 +4,11 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"log"
 	"os"
+	"strings"
 
 	"git.torproject.org/pluggable-transports/obfs4.git/common/csrand"
 	"git.torproject.org/pluggable-transports/obfs4.git/common/drbg"
@@ -59,11 +61,14 @@ func obfs4() (result map[string]interface{}, err error) {
 	if err != nil {
 		return
 	}
+	certRaw := append(nodeID.Bytes()[:], identityKey.Public().Bytes()[:]...)
+	cert := strings.TrimSuffix(base64.StdEncoding.EncodeToString(certRaw), "==")
 
 	result = map[string]interface{}{
 		"node_id":     nodeID.Hex(),
 		"private_key": identityKey.Private().Hex(),
 		"public_key":  identityKey.Public().Hex(),
+		"cert":        cert,
 		"drbg_seed":   drbgSeed.Hex(),
 		"iat_mode":    0,
 	}
